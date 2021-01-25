@@ -11,11 +11,14 @@ import (
 )
 
 var (
-	WithDialOption = internal.WithDialOption
-	WithTimeout    = internal.WithTimeout
+	WithDialOption             = internal.WithDialOption
+	WithTimeout                = internal.WithTimeout
+	WithUnaryClientInterceptor = internal.WithUnaryClientInterceptor
 )
 
 type (
+	ClientOption = internal.ClientOption
+
 	Client interface {
 		Conn() *grpc.ClientConn
 	}
@@ -25,7 +28,7 @@ type (
 	}
 )
 
-func MustNewClient(c RpcClientConf, options ...internal.ClientOption) Client {
+func MustNewClient(c RpcClientConf, options ...ClientOption) Client {
 	cli, err := NewClient(c, options...)
 	if err != nil {
 		log.Fatal(err)
@@ -34,8 +37,8 @@ func MustNewClient(c RpcClientConf, options ...internal.ClientOption) Client {
 	return cli
 }
 
-func NewClient(c RpcClientConf, options ...internal.ClientOption) (Client, error) {
-	var opts []internal.ClientOption
+func NewClient(c RpcClientConf, options ...ClientOption) (Client, error) {
+	var opts []ClientOption
 	if c.HasCredential() {
 		opts = append(opts, WithDialOption(grpc.WithPerRPCCredentials(&auth.Credential{
 			App:   c.App,
@@ -63,8 +66,8 @@ func NewClient(c RpcClientConf, options ...internal.ClientOption) (Client, error
 	}, nil
 }
 
-func NewClientNoAuth(c discov.EtcdConf) (Client, error) {
-	client, err := internal.NewClient(internal.BuildDiscovTarget(c.Hosts, c.Key))
+func NewClientNoAuth(c discov.EtcdConf, opts ...ClientOption) (Client, error) {
+	client, err := internal.NewClient(internal.BuildDiscovTarget(c.Hosts, c.Key), opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +77,7 @@ func NewClientNoAuth(c discov.EtcdConf) (Client, error) {
 	}, nil
 }
 
-func NewClientWithTarget(target string, opts ...internal.ClientOption) (Client, error) {
+func NewClientWithTarget(target string, opts ...ClientOption) (Client, error) {
 	return internal.NewClient(target, opts...)
 }
 

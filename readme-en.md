@@ -1,3 +1,5 @@
+<img align="right" width="150px" src="doc/images/go-zero.png">
+
 # go-zero
 
 English | [简体中文](readme.md)
@@ -27,7 +29,7 @@ Advantages of go-zero:
 
 ## 1. Backgrounds of go-zero
 
-At the beginning of 2018, we heavily suffered from frequent downtime. We decided to re-design our system, from monolithic architecture with Java+MongoDB to microservice architecture. After researches and comparison, we chose to:
+At the beginning of 2018, we decided to re-design our system, from monolithic architecture with Java+MongoDB to microservice architecture. After researches and comparison, we chose to:
 
 * Golang based
   * great performance
@@ -93,9 +95,9 @@ go get -u github.com/tal-tech/go-zero
 
 0. full examples can be checked out from below:
 
-     [Rapid development of microservice systems](doc/shorturl-en.md)
+     [Rapid development of microservice systems](https://github.com/tal-tech/zero-doc/blob/main/doc/shorturl-en.md)
 
-     [Rapid development of microservice systems - multiple RPCs](doc/bookstore-en.md)
+     [Rapid development of microservice systems - multiple RPCs](https://github.com/tal-tech/zero-doc/blob/main/doc/bookstore-en.md)
 
 1. install goctl
 
@@ -119,19 +121,17 @@ go get -u github.com/tal-tech/go-zero
    }
 
    service greet-api {
-     @server(
-       handler: GreetHandler
-     )
+     @handler GreetHandler
      get /greet/from/:name(Request) returns (Response);
    }
    ```
-
+   
    the .api files also can be generate by goctl, like below:
 
    ```shell
    goctl api -o greet.api
    ```
-
+   
 3. generate the go server side code
 
    ```shell
@@ -163,8 +163,10 @@ go get -u github.com/tal-tech/go-zero
    the generated code can be run directly:
 
    ```shell
-     cd greet
-     go run greet.go -f etc/greet-api.yaml
+   cd greet
+   go mod init
+   go mod tidy
+   go run greet.go -f etc/greet-api.yaml
    ```
 
    by default, it’s listening on port 8888, while it can be changed in configuration file.
@@ -172,7 +174,7 @@ go get -u github.com/tal-tech/go-zero
    you can check it by curl:
 
    ```shell
-   curl -i http://localhost:8888/greet/from/you
+   curl -i http://localhost:8888/from/you
    ```
 
    the response looks like:
@@ -204,5 +206,9 @@ go get -u github.com/tal-tech/go-zero
 
 ## 8. Documents (adding)
 
-* [Rapid development of microservice systems](doc/shorturl-en.md)
-* [Rapid development of microservice systems - multiple RPCs](doc/bookstore-en.md)
+* [Rapid development of microservice systems](https://github.com/tal-tech/zero-doc/blob/main/doc/shorturl-en.md)
+* [Rapid development of microservice systems - multiple RPCs](https://github.com/tal-tech/zero-doc/blob/main/doc/bookstore-en.md)
+
+## 9. Chat group
+
+Join the chat via https://discord.gg/4JQvC5A4Fe

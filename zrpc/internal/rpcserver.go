@@ -17,6 +17,7 @@ type (
 	}
 
 	rpcServer struct {
+		name string
 		*baseRpcServer
 	}
 )
@@ -40,6 +41,7 @@ func NewRpcServer(address string, opts ...ServerOption) Server {
 }
 
 func (s *rpcServer) SetName(name string) {
+	s.name = name
 	s.baseRpcServer.SetName(name)
 }
 
@@ -50,9 +52,10 @@ func (s *rpcServer) Start(register RegisterFn) error {
 	}
 
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
+		serverinterceptors.UnaryTracingInterceptor(s.name),
 		serverinterceptors.UnaryCrashInterceptor(),
 		serverinterceptors.UnaryStatInterceptor(s.metrics),
-		serverinterceptors.UnaryPromMetricInterceptor(),
+		serverinterceptors.UnaryPrometheusInterceptor(),
 	}
 	unaryInterceptors = append(unaryInterceptors, s.unaryInterceptors...)
 	streamInterceptors := []grpc.StreamServerInterceptor{
@@ -65,13 +68,12 @@ func (s *rpcServer) Start(register RegisterFn) error {
 	register(server)
 	// we need to make sure all others are wrapped up
 	// so we do graceful stop at shutdown phase instead of wrap up phase
-	shutdownCalled := proc.AddShutdownListener(func() {
+	waitForCalled := proc.AddWrapUpListener(func() {
 		server.GracefulStop()
 	})
-	err = server.Serve(lis)
-	shutdownCalled()
+	defer waitForCalled()
 
-	return err
+	return server.Serve(lis)
 }
 
 func WithMetrics(metrics *stat.Metrics) ServerOption {

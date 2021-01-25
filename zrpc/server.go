@@ -13,9 +13,13 @@ import (
 	"github.com/tal-tech/go-zero/zrpc/internal"
 	"github.com/tal-tech/go-zero/zrpc/internal/auth"
 	"github.com/tal-tech/go-zero/zrpc/internal/serverinterceptors"
+	"google.golang.org/grpc"
 )
 
-const envPodIp = "POD_IP"
+const (
+	allEths  = "0.0.0.0"
+	envPodIp = "POD_IP"
+)
 
 type RpcServer struct {
 	server   internal.Server
@@ -65,6 +69,18 @@ func NewServer(c RpcServerConf, register internal.RegisterFn) (*RpcServer, error
 	return rpcServer, nil
 }
 
+func (rs *RpcServer) AddOptions(options ...grpc.ServerOption) {
+	rs.server.AddOptions(options...)
+}
+
+func (rs *RpcServer) AddStreamInterceptors(interceptors ...grpc.StreamServerInterceptor) {
+	rs.server.AddStreamInterceptors(interceptors...)
+}
+
+func (rs *RpcServer) AddUnaryInterceptors(interceptors ...grpc.UnaryServerInterceptor) {
+	rs.server.AddUnaryInterceptors(interceptors...)
+}
+
 func (rs *RpcServer) Start() {
 	if err := rs.server.Start(rs.register); err != nil {
 		logx.Error(err)
@@ -83,7 +99,7 @@ func figureOutListenOn(listenOn string) string {
 	}
 
 	host := fields[0]
-	if len(host) > 0 && host != "0.0.0.0" {
+	if len(host) > 0 && host != allEths {
 		return listenOn
 	}
 
@@ -108,8 +124,6 @@ func setupInterceptors(server internal.Server, c RpcServerConf, metrics *stat.Me
 		server.AddUnaryInterceptors(serverinterceptors.UnaryTimeoutInterceptor(
 			time.Duration(c.Timeout) * time.Millisecond))
 	}
-
-	server.AddUnaryInterceptors(serverinterceptors.UnaryTracingInterceptor(c.Name))
 
 	if c.Auth {
 		authenticator, err := auth.NewAuthenticator(c.Redis.NewRedis(), c.Redis.Key, c.StrictControl)
